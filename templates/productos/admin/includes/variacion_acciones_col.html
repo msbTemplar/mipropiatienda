@@ -1,0 +1,10 @@
+{# mitienda/templates/productos/admin/includes/variacion_acciones_col.html #}
+<a href="{% url 'productos:admin_variacion_producto_edit' pk=record.pk %}" class="btn btn-sm btn-primary me-2" title="Editar">
+    <i class="bi bi-pencil"></i>
+</a>
+<form action="{% url 'productos:admin_variacion_producto_delete' pk=record.pk %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta variación?');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>

@@ -1,0 +1,78 @@
+{# mitienda/templates/productos/cart.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Carrito - Mi Tienda Online{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4 text-center">Mi Carrito de Compras</h1>
+
+    {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if cart_items %}
+        <div class="row">
+            <div class="col-md-9">
+                <ul class="list-group mb-3">
+                    {% for item in cart_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ item.imagen_url }}" alt="{{ item.producto_nombre }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                <div>
+                                    <h5 class="my-0">{{ item.producto_nombre }}</h5>
+                                    <small class="text-muted">{{ item.variacion_nombre }}</small><br>
+                                    <span class="text-muted">Precio unitario: ${{ item.precio_unitario|floatformat:2 }}</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <form action="{% url 'pedidos:update_cart' %}" method="post" class="d-flex align-items-center me-3">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="variacion_id" value="{{ item.variacion_id }}">
+                                    <label for="quantity_{{ item.variacion_id }}" class="visually-hidden">Cantidad:</label>
+                                    <input type="number" id="quantity_{{ item.variacion_id }}" name="cantidad" value="{{ item.cantidad }}" min="1" max="{{ item.stock_disponible }}" class="form-control form-control-sm text-center" style="width: 70px;" onchange="this.form.submit()">
+                                </form>
+                                <span class="text-nowrap me-3 fw-bold">${{ item.subtotal|floatformat:2 }}</span>
+                                <a href="{% url 'pedidos:remove_from_cart' item.variacion_id %}" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Resumen del Carrito</span>
+                        </h4>
+                        <ul class="list-group mb-3">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>Total (USD)</span>
+                                <strong>${{ total_general|floatformat:2 }}</strong>
+                            </li>
+                        </ul>
+                        <a href="{% url 'pedidos:checkout' %}" class="btn btn-primary btn-lg w-100">Proceder al Pago</a>
+                        
+                        <a href="{% url 'productos:productos_listado' %}" class="btn btn-outline-secondary w-100 mt-2">Seguir Comprando</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            Tu carrito de compras está vacío.
+        </div>
+        <div class="text-center">
+            <a href="{% url 'productos:productos_listado' %}" class="btn btn-primary btn-lg">Explorar Productos</a>
+        </div>
+    {% endif %}
+{% endblock %}

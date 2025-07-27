@@ -1,0 +1,18 @@
+{# mitienda/templates/productos/admin/includes/producto_acciones_col.html #}
+<div class="btn-group" role="group" aria-label="Acciones">
+    <a href="{% url 'productos:admin_producto_edit' pk=record.pk %}" class="btn btn-sm btn-primary" title="Editar Producto">
+        <i class="bi bi-pencil"></i>
+    </a>
+    <a href="{% url 'productos:admin_variaciones_producto_list_by_product' producto_pk=record.pk %}" class="btn btn-sm btn-info" title="Gestionar Variaciones">
+        <i class="bi bi-palette"></i>
+    </a>
+    <a href="{% url 'productos:admin_imagenes_producto_list_by_product' producto_pk=record.pk %}" class="btn btn-sm btn-secondary" title="Gestionar Imágenes">
+        <i class="bi bi-image"></i>
+    </a>
+    <form action="{% url 'productos:admin_producto_delete' pk=record.pk %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este producto? Esto eliminará también sus variaciones e imágenes.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-danger" title="Eliminar Producto">
+            <i class="bi bi-trash"></i>
+        </button>
+    </form>
+</div>

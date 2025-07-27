@@ -1,0 +1,113 @@
+{# mitienda/templates/productos/admin/productos_list.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Productos - Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Productos</h1>
+        <div>
+            <a href="{% url 'productos:admin_producto_create' %}" class="btn btn-success me-2">
+                <i class="bi bi-plus-circle"></i> Nuevo Producto
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear"></i> Gestionar Datos
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{% url 'productos:admin_categorias_list' %}">Categorías</a></li>
+                    <li><a class="dropdown-item" href="{% url 'productos:admin_marcas_list' %}">Marcas</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'productos:admin_tipos_variacion_list' %}">Tipos de Variación</a></li>
+                    <li><a class="dropdown-item" href="{% url 'productos:admin_valores_variacion_list' %}">Valores de Variación</a></li>
+                    <li><a class="dropdown-item" href="{% url 'productos:admin_variaciones_producto_list' %}">Todas las Variaciones</a></li>
+                    <li><a class="dropdown-item" href="{% url 'productos:admin_imagenes_producto_list' %}">Todas las Imágenes</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {% if productos %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Marca</th>
+                    <th>Precio Base</th>
+                    <th>Stock Total</th>
+                    <th>Disponible</th>
+                    <th>Destacado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <td>{{ producto.pk }}</td>
+                    <td>{{ producto.nombre }}</td>
+                    <td>{{ producto.categoria.nombre|default:"N/A" }}</td>
+                    <td>{{ producto.marca.nombre|default:"N/A" }}</td>
+                    <td>{{ producto.precio|floatformat:2 }} €</td>
+                    <td>
+                        {% if producto.total_stock is not None %}
+                            {% if producto.total_stock == 0 %}
+                                <span class="badge bg-danger">Agotado</span>
+                            {% elif producto.total_stock < 10 %}
+                                <span class="badge bg-warning">Poco Stock ({{ producto.total_stock }})</span>
+                            {% else %}
+                                <span class="badge bg-success">{{ producto.total_stock }}</span>
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if producto.disponible %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if producto.es_destacado %}
+                            <i class="bi bi-star-fill text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-star"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group" aria-label="Acciones">
+                            <a href="{% url 'productos:admin_producto_edit' pk=producto.pk %}" class="btn btn-sm btn-primary" title="Editar Producto">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'productos:admin_variaciones_producto_list_by_product' producto_pk=producto.pk %}" class="btn btn-sm btn-info" title="Gestionar Variaciones">
+                                <i class="bi bi-palette"></i>
+                            </a>
+                            <a href="{% url 'productos:admin_imagenes_producto_list_by_product' producto_pk=producto.pk %}" class="btn btn-sm btn-secondary" title="Gestionar Imágenes">
+                                <i class="bi bi-image"></i>
+                            </a>
+                            <form action="{% url 'productos:admin_producto_delete' pk=producto.pk %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este producto? Esto eliminará también sus variaciones e imágenes.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar Producto">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        No hay productos registrados. <a href="{% url 'productos:admin_producto_create' %}">¡Crea el primero!</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

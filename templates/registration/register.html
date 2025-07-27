@@ -1,0 +1,46 @@
+{# mitienda/templates/registration/register.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrarse - Mi Tienda Online{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">Crear una Cuenta</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %} {# Esencial para la seguridad en formularios Django #}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success mt-3">Registrarse</button>
+                    </div>
+                </form>
+                <hr>
+                <p class="text-center">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Iniciar Sesión</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

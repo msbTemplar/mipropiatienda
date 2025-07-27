@@ -1,0 +1,110 @@
+{# mitienda/templates/productos/admin/variaciones_producto_list.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if producto %}Variaciones de {{ producto.nombre }}{% else %}Todas las Variaciones{% endif %} - Admin
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            {% if producto %}Variaciones de "{{ producto.nombre }}"{% else %}Todas las Variaciones de Productos{% endif %}
+        </h1>
+        <div>
+            {% if producto %}
+                <a href="{% url 'productos:admin_variacion_producto_create_for_product' producto_pk=producto.pk %}" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Nueva Variación para {{ producto.nombre }}
+                </a>
+            {% else %}
+                <a href="{% url 'productos:admin_variacion_producto_create' %}" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Nueva Variación
+                </a>
+            {% endif %}
+            <a href="{% url 'productos:admin_productos_list' %}" class="btn btn-info">
+                <i class="bi bi-box"></i> Volver a Productos
+            </a>
+        </div>
+    </div>
+
+    {% if variaciones %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    {% if not producto %}<th>Producto</th>{% endif %}
+                    <th>Valores</th>
+                    <th>SKU</th>
+                    <th>Stock</th>
+                    <th>Precio Adicional</th>
+                    <th>Imagen</th>
+                    <th>Activo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for variacion in variaciones %}
+                <tr>
+                    <td>{{ variacion.pk }}</td>
+                    {% if not producto %}<td>{{ variacion.producto.nombre }}</td>{% endif %}
+                    <td>
+                        {% for valor in variacion.valores.all %}
+                            <span class="badge bg-secondary">{{ valor.tipo_variacion.nombre }}: {{ valor.valor }}</span>{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            <em>Sin valores</em>
+                        {% endfor %}
+                    </td>
+                    <td>{{ variacion.sku|default:"N/A" }}</td>
+                    <td>
+                        {% if variacion.stock == 0 %}
+                            <span class="badge bg-danger">Agotado</span>
+                        {% elif variacion.stock < 5 %} {# Umbral bajo diferente para variaciones si se desea #}
+                            <span class="badge bg-warning">Bajo ({{ variacion.stock }})</span>
+                        {% else %}
+                            <span class="badge bg-success">{{ variacion.stock }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ variacion.precio_adicional|floatformat:2 }} €</td>
+                    <td>
+                        {% if variacion.imagen_variacion %}
+                            <img src="{{ variacion.imagen_variacion.url }}" alt="Imagen de variación" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if variacion.activo %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'productos:admin_variacion_producto_edit' pk=variacion.pk %}" class="btn btn-sm btn-primary me-2" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{% url 'productos:admin_variacion_producto_delete' pk=variacion.pk %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta variación?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        {% if producto %}
+            No hay variaciones para este producto. <a href="{% url 'productos:admin_variacion_producto_create_for_product' producto_pk=producto.pk %}">¡Crea la primera!</a>
+        {% else %}
+            No hay variaciones de producto registradas. <a href="{% url 'productos:admin_variacion_producto_create' %}">¡Crea la primera!</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

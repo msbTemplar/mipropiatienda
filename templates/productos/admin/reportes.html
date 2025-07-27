@@ -1,0 +1,86 @@
+{# mitienda/templates/productos/admin/reportes.html #}
+{% extends 'base.html' %}
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %} {# Para renderizar filtros si los usas con crispy forms #}
+
+{% block title %}Reportes de Productos y Variaciones - Admin{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Reportes de Inventario</h1>
+        <a href="{% url 'productos:admin_productos_list' %}" class="btn btn-info">
+            <i class="bi bi-box"></i> Gestión de Productos
+        </a>
+    </div>
+
+    {# Mensajes de Django #}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    {# Sección de Productos #}
+    <h2>Listado de Productos</h2>
+    <form method="get" class="mb-4">
+        <div class="card card-body shadow-sm">
+            <h5>Filtros de Productos</h5>
+            {{ producto_filter.form|crispy }}
+            <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
+            {% if request.GET.producto_filter %}
+                <a href="{% url 'productos:admin_reportes_productos' %}" class="btn btn-outline-secondary mt-2">Limpiar Filtros</a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% render_table productos_table %}
+
+    <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Productos">
+        <a href="?_export=xlsx_productos{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Productos (Excel)
+        </a>
+        <a href="?_export=csv_productos{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-secondary me-2">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Productos (CSV)
+        </a>
+        <a href="?_export=pdf_productos{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar Productos (PDF)
+        </a>
+    </div>
+
+    <hr class="my-5">
+
+    {# Sección de Variaciones de Producto #}
+    <h2>Listado de Variaciones de Producto</h2>
+    <form method="get" class="mb-4">
+        <div class="card card-body shadow-sm">
+            <h5>Filtros de Variaciones</h5>
+            {{ variacion_filter.form|crispy }}
+            <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
+            {% if request.GET.variacion_filter %}
+                <a href="{% url 'productos:admin_reportes_productos' %}" class="btn btn-outline-secondary mt-2">Limpiar Filtros</a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% render_table variaciones_table %}
+
+    <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Variaciones">
+        <a href="?_export=xlsx_variaciones{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Variaciones (Excel)
+        </a>
+        <a href="?_export=csv_variaciones{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-secondary me-2">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Variaciones (CSV)
+        </a>
+        <a href="?_export=pdf_variaciones{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar Variaciones (PDF)
+        </a>
+    </div>
+
+</div>
+{% endblock %}

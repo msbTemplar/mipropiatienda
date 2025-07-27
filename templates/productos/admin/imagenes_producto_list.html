@@ -1,0 +1,90 @@
+{# mitienda/templates/productos/admin/imagenes_producto_list.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if producto %}Imágenes de {{ producto.nombre }}{% else %}Todas las Imágenes{% endif %} - Admin
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            {% if producto %}Imágenes de "{{ producto.nombre }}"{% else %}Todas las Imágenes de Productos{% endif %}
+        </h1>
+        <div>
+            {% if producto %}
+                <a href="{% url 'productos:admin_imagen_producto_create_for_product' producto_pk=producto.pk %}" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Nueva Imagen para {{ producto.nombre }}
+                </a>
+            {% else %}
+                <a href="{% url 'productos:admin_imagen_producto_create' %}" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Nueva Imagen
+                </a>
+            {% endif %}
+            <a href="{% url 'productos:admin_productos_list' %}" class="btn btn-info">
+                <i class="bi bi-box"></i> Volver a Productos
+            </a>
+        </div>
+    </div>
+
+    {% if imagenes %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    {% if not producto %}<th>Producto</th>{% endif %}
+                    <th>Imagen</th>
+                    <th>Principal</th>
+                    <th>Orden</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for imagen in imagenes %}
+                <tr>
+                    <td>{{ imagen.pk }}</td>
+                    {% if not producto %}<td>{{ imagen.producto.nombre }}</td>{% endif %}
+                    <td>
+                        {% if imagen.imagen %}
+                            <img src="{{ imagen.imagen.url }}" alt="Imagen de producto" class="img-thumbnail" style="width: 70px; height: 70px; object-fit: cover;">
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if imagen.es_principal %}
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                        {% else %}
+                            <i class="bi bi-x-circle-fill text-danger"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ imagen.orden }}</td>
+                    <td>
+                        <a href="{% url 'productos:admin_imagen_producto_edit' pk=imagen.pk %}" class="btn btn-sm btn-primary me-2" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form action="{% url 'productos:admin_imagen_producto_delete' pk=imagen.pk %}" method="post" class="d-inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta imagen?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center" role="alert">
+        {% if producto %}
+            No hay imágenes para este producto. <a href="{% url 'productos:admin_imagen_producto_create_for_product' producto_pk=producto.pk %}">¡Sube la primera!</a>
+        {% else %}
+            No hay imágenes de producto registradas. <a href="{% url 'productos:admin_imagen_producto_create' %}">¡Sube la primera!</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

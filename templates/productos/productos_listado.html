@@ -1,0 +1,67 @@
+{# mitienda/templates/productos/productos_listado.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Todos los Productos - Mi Tienda Online{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4 text-center">Nuestro Catálogo</h1>
+
+    {# Filtros y Búsqueda #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <form action="{% url 'productos:productos_listado' %}" method="get">
+                <div class="mb-3">
+                    <label for="categoria-select" class="form-label">Categoría:</label>
+                    <select class="form-select" id="categoria-select" name="categoria" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        {% for cat in categorias %}
+                            <option value="{{ cat.slug }}" {% if categoria_seleccionada == cat.slug %}selected{% endif %}>{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="marca-select" class="form-label">Marca:</label>
+                    <select class="form-select" id="marca-select" name="marca" onchange="this.form.submit()">
+                        <option value="">Todas</option>
+                        {% for mar in marcas %}
+                            <option value="{{ mar.slug }}" {% if marca_seleccionada == mar.slug %}selected{% endif %}>{{ mar.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Buscar producto..." name="q" value="{{ search_query|default_if_none:'' }}">
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-9">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for producto in productos %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            {% if producto.imagenes.first %}
+                                <img src="{{ producto.imagenes.first.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'img/placeholder.png' %}" class="card-img-top" alt="Sin imagen" style="height: 200px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ producto.nombre }}</h5>
+                                <p class="card-text text-muted mb-auto">{{ producto.categoria.nombre }}</p>
+                                <p class="card-text fs-4 fw-bold mt-2">${{ producto.precio|floatformat:2 }}</p>
+                                <div class="mt-3">
+                                    <a href="{% url 'productos:producto_detalle' producto.slug %}" class="btn btn-primary btn-sm w-100">Ver Detalles</a>
+                                    {# <a href="#" class="btn btn-success btn-sm w-100 mt-2">Añadir al Carrito</a> #}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center">
+                        <p>No se encontraron productos.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

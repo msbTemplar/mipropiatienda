@@ -1,0 +1,103 @@
+{# usuarios/templates/usuarios/ver_perfil.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil y Pedidos - Mi Tienda Online{% endblock %}
+
+{% block content %}
+    <div class="container my-5">
+        <h1 class="mb-4 text-center">Hola, {{ nombre_usuario }}</h1>
+        <p class="text-center lead">Aquí puedes ver tus datos y el historial de tus compras.</p>
+
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Mis Datos</h4>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Nombre de usuario:</strong> {{ user_obj.username }}</p>
+                        <p><strong>Email:</strong> {{ user_obj.email }}</p> {# Accede al email directamente de user_obj #}
+                        <p><strong>Nombre:</strong> {{ user_obj.first_name|default:"No especificado" }}</p>
+                        <p><strong>Apellido:</strong> {{ user_obj.last_name|default:"No especificado" }}</p>
+                        <p><strong>Teléfono:</strong> {{ user_obj.telefono|default:"No especificado" }}</p> {# Accede al teléfono directamente de user_obj #}
+                        
+                        <a href="{% url 'usuarios:editar_perfil' %}" class="btn btn-outline-primary btn-sm mt-3">Editar Perfil</a>
+                        <a href="{% url 'password_change' %}" class="btn btn-outline-secondary btn-sm mt-3 ms-2">Cambiar Contraseña</a>
+                    </div>
+                </div>
+
+                <h2 class="mb-4 text-center mt-5">Tu Historial de Pedidos</h2>
+
+                {% if pedidos_usuario %}
+                    <div class="accordion" id="pedidosAccordion">
+                        {% for pedido in pedidos_usuario %}
+                        <div class="accordion-item mb-3 shadow-sm">
+                            <h2 class="accordion-header" id="heading{{ pedido.id }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ pedido.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ pedido.id }}">
+                                    Pedido #{{ pedido.id }} - {{ pedido.fecha_pedido|date:"d M Y H:i" }} 
+                                    <span class="ms-auto me-2 badge bg-primary">Total: {{ pedido.get_total_cost|floatformat:2 }} €</span>
+                                    <span class="badge bg-info text-dark">{{ pedido.get_estado_display }}</span> 
+                                </button>
+                            </h2>
+                            <div id="collapse{{ pedido.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ pedido.id }}" data-bs-parent="#pedidosAccordion">
+                                <div class="accordion-body">
+                                    <h5 class="mb-3">Productos del Pedido</h5>
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-sm table-bordered table-striped align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Variación</th>
+                                                    <th class="text-center">Cantidad</th>
+                                                    <th class="text-end">Precio Unitario</th>
+                                                    <th class="text-end">Subtotal</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in pedido.items.all %}
+                                                <tr>
+                                                    <td>{{ item.variacion_producto.producto.nombre }}</td>
+                                                    <td>{{ item.variacion_producto }}</td>
+                                                    <td class="text-center">{{ item.cantidad }}</td>
+                                                    <td class="text-end">{{ item.precio_unitario|floatformat:2 }} €</td>
+                                                    <td class="text-end">{{ item.get_cost|floatformat:2 }} €</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="4" class="text-end">Total del Pedido:</th>
+                                                    <th class="text-end">{{ pedido.get_total_cost|floatformat:2 }} €</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+
+                                    <h5 class="mt-4 mb-3">Información de Envío</h5>
+                                    <div class="card text-start p-3 bg-light">
+                                        <p class="mb-1"><strong>Estado:</strong> {{ pedido.get_estado_display|default:"Procesado" }}</p>
+                                        <p class="mb-1"><strong>Método de Pago:</strong> {{ pedido.metodo_pago }}</p>
+                                        <p class="mb-1"><strong>Nombre:</strong> {{ pedido.nombre_envio }}</p>
+                                        <p class="mb-1"><strong>Email:</strong> {{ pedido.email_envio }}</p>
+                                        <p class="mb-1"><strong>Dirección:</strong> {{ pedido.direccion_envio_line1 }}{% if pedido.direccion_envio_line2 %}, {{ pedido.direccion_envio_line2 }}{% endif %}</p>
+                                        <p class="mb-1"><strong>Ciudad:</strong> {{ pedido.ciudad_envio }}, {{ pedido.codigo_postal_envio }}</p>
+                                        <p class="mb-0"><strong>País:</strong> {{ pedido.pais_envio }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center" role="alert">
+                        Aún no has realizado ningún pedido. ¡Explora nuestros productos!
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{% url 'productos:productos_listado' %}" class="btn btn-primary btn-lg">Ir a la Tienda</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

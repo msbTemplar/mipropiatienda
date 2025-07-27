@@ -1,0 +1,47 @@
+{# mitienda/templates/home.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Mi Tienda Online{% endblock %}
+
+{% block content %}
+    <div class="jumbotron jumbotron-fluid text-center bg-light py-5">
+        <div class="container">
+            <h1 class="display-4">¡Bienvenido a Mi Tienda Online!</h1>
+            <p class="lead">Descubre la última moda y las mejores ofertas.</p>
+            <hr class="my-4">
+            <p>Explora nuestra amplia selección de productos.</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'productos:productos_listado' %}" role="button">Ver Productos</a> {# Usamos el nombre de la URL #}
+        </div>
+    </div>
+
+    <h2 class="text-center my-5">Productos Destacados</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4"> {# Grid responsivo de Bootstrap #}
+        {% for producto in productos_destacados %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    {% if producto.imagenes.first %}
+                        <img src="{{ producto.imagenes.first.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'img/placeholder.png' %}" class="card-img-top" alt="Sin imagen" style="height: 200px; object-fit: cover;"> {# Necesitarás una imagen placeholder #}
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ producto.nombre }}</h5>
+                        <p class="card-text text-muted mb-auto">{{ producto.categoria.nombre }}</p>
+                        <p class="card-text fs-4 fw-bold mt-2">${{ producto.precio|floatformat:2 }}</p>
+                        <div class="mt-3">
+                            <a href="{% url 'productos:producto_detalle' producto.slug %}" class="btn btn-primary btn-sm w-100">Ver Detalles</a>
+                            {# <a href="#" class="btn btn-success btn-sm w-100 mt-2">Añadir al Carrito</a> #} {# Esto lo haremos más adelante #}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p>No hay productos destacados disponibles en este momento.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {# Espacio para el footer #}
+{% endblock %}

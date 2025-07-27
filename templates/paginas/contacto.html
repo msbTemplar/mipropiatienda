@@ -1,0 +1,42 @@
+{# mitienda/templates/paginas/contacto.html #}
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %} {# Si usas crispy-forms para un renderizado bonito #}
+
+{% block title %}Contacto - Mi Tienda Online{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-4">Contáctanos</h1>
+            <p class="lead text-center mb-5">
+                ¿Tienes alguna pregunta, sugerencia o necesitas ayuda? No dudes en contactarnos.
+            </p>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    {# El formulario de Django se renderizará aquí #}
+                    <form method="post"> {# Importante: method="post" #}
+                        {% csrf_token %} {# ¡CRUCIAL para seguridad en formularios POST! #}
+                        
+                        {# Renderiza los campos del formulario #}
+                        {{ form|crispy }} {# O si no usas crispy-forms: {{ form.as_p }} o renderiza campo por campo #}
+
+                        <button type="submit" class="btn btn-primary mt-3">Enviar Mensaje</button>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <h5 class="text-center mb-3">O encuéntranos en:</h5>
+                    <ul class="list-unstyled text-center">
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> Calle Ficticia 123, Ciudad Django, CP 45678</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> +34 912 34 56 78</li>
+                        <li><i class="bi bi-envelope-fill me-2"></i> info@mitienda.com</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

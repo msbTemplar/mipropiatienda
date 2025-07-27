@@ -1,0 +1,89 @@
+{# mitienda/templates/productos/producto_detalle.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ producto.nombre }} - Mi Tienda Online{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb bg-light p-3 rounded">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'productos:productos_listado' %}">Productos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ producto.nombre }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% if imagenes %}
+                        {% for img in imagenes %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ img.imagen.url }}" class="d-block w-100 rounded" alt="{{ producto.nombre }}" style="max-height: 500px; object-fit: contain;">
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="carousel-item active">
+                            <img src="{% static 'img/placeholder.png' %}" class="d-block w-100 rounded" alt="Sin imagen" style="max-height: 500px; object-fit: contain;">
+                        </div>
+                    {% endif %}
+                </div>
+                {% if imagenes.count > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h1 class="display-5 mb-3">{{ producto.nombre }}</h1>
+            <p class="lead text-primary fw-bold fs-3">${{ producto.precio|floatformat:2 }}</p>
+            <p class="text-muted">Categoría: <a href="{% url 'productos:productos_listado' %}?categoria={{ producto.categoria.slug }}">{{ producto.categoria.nombre }}</a></p>
+            {% if producto.marca %}
+                <p class="text-muted">Marca: <a href="{% url 'productos:productos_listado' %}?marca={{ producto.marca.slug }}">{{ producto.marca.nombre }}</a></p>
+            {% endif %}
+
+            <hr>
+
+            <h3 class="mt-4">Descripción</h3>
+            <p>{{ producto.descripcion|linebreaksbr }}</p>
+            
+            <hr>
+
+            {# Sección para seleccionar variaciones #}
+            {% if variaciones %}
+                <h4 class="mt-4">Selecciona tu opción:</h4>
+                <form action="{% url 'pedidos:add_to_cart' %}" method="post"> {# AHORA APUNTA A ADD_TO_CART #}
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="variacion_selector" class="form-label">Variación</label>
+                        <select class="form-select" id="variacion_selector" name="variacion_id" required>
+                            {% for variacion in variaciones %}
+                                <option value="{{ variacion.id }}">
+                                    {{ variacion }} {# Usa el método __str__ de VariacionProducto #}
+                                    - Stock: {{ variacion.stock }}
+                                    {% if variacion.precio_adicional > 0 %} (+${{ variacion.precio_adicional|floatformat:2 }}) {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad</label>
+                        <input type="number" id="cantidad" name="cantidad" class="form-control" value="1" min="1" max="{% if variaciones.first %}{{ variaciones.first.stock }}{% else %}1{% endif %}" required>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg">Añadir al Carrito</button>
+                </form>
+            {% else %}
+                <div class="alert alert-warning" role="alert">
+                    Este producto no tiene variaciones disponibles o está fuera de stock.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

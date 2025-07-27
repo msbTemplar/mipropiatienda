@@ -1,0 +1,61 @@
+{# mitienda/templates/registration/login.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión - Mi Tienda Online{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">Iniciar Sesión</h4>
+            </div>
+            <div class="card-body">
+                {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        Tu nombre de usuario o contraseña son incorrectos. Por favor, inténtalo de nuevo.
+                    </div>
+                {% endif %}
+
+                {% if next %}
+                    {% if user.is_authenticated %}
+                        <div class="alert alert-warning" role="alert">
+                            Tu cuenta no tiene acceso a esta página. Para proceder, por favor inicia sesión con una cuenta que tenga acceso.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            Por favor, inicia sesión para ver esta página.
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %} {# ¡Esencial para la seguridad en formularios Django! #}
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">Usuario</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Contraseña</label>
+                        {{ form.password }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary mt-3">Iniciar Sesión</button>
+                    </div>
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+
+                <hr>
+                <p class="text-center">
+                    <a href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+                </p>
+                <p class="text-center">
+                    ¿No tienes una cuenta? <a href="{% url 'usuarios:register' %}">Regístrate aquí</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
