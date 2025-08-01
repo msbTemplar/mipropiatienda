@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Pago Exitoso{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="alert alert-success" role="alert">
+        <h4 class="alert-heading">¡Pago exitoso!</h4>
+        <p>Gracias por tu compra. Tu pedido con ID <strong>#{{ pedido.id }}</strong> está en proceso.</p>
+        <hr>
+        <p class="mb-0">Recibirás una notificación por correo electrónico una vez que tu pago haya sido verificado y el pedido esté listo para el envío.</p>
+    </div>
+    <a href="{% url 'pedidos:order_confirmation' pedido.id %}" class="btn btn-primary mt-3">Ver detalles del pedido</a>
+</div>
+{% endblock %}

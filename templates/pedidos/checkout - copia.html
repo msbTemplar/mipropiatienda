@@ -1,0 +1,114 @@
+{# mitienda/templates/pedidos/checkout.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Mi Tienda Online{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4 text-center">Finalizar Compra</h1>
+
+    {% if messages %}
+        <div class="messages mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-7 order-md-1">
+            <h4 class="mb-3">Información de Envío</h4>
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="{{ form.nombre_envio.id_for_label }}" class="form-label">Nombre Completo</label>
+                        {{ form.nombre_envio }} {# CAMBIADO: AHORA nombre_envio #}
+                        {% if form.nombre_envio.errors %}
+                            <div class="text-danger small">{{ form.nombre_envio.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.email_envio.id_for_label }}" class="form-label">Email</label>
+                    {{ form.email_envio }} {# CAMBIADO: AHORA email_envio #}
+                    {% if form.email_envio.errors %}
+                        <div class="text-danger small">{{ form.email_envio.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label for="{{ form.direccion_envio_line1.id_for_label }}" class="form-label">Dirección</label>
+                    {{ form.direccion_envio_line1 }} {# CAMBIADO: AHORA direccion_envio_line1 #}
+                    {% if form.direccion_envio_line1.errors %}
+                        <div class="text-danger small">{{ form.direccion_envio_line1.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.ciudad_envio.id_for_label }}" class="form-label">Ciudad</label>
+                        {{ form.ciudad_envio }} {# CAMBIADO: AHORA ciudad_envio #}
+                        {% if form.ciudad_envio.errors %}
+                            <div class="text-danger small">{{ form.ciudad_envio.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.provincia_envio.id_for_label }}" class="form-label">Provincia</label>
+                        {{ form.provincia_envio }} {# AÑADIDO: provincia_envio #}
+                        {% if form.provincia_envio.errors %}
+                            <div class="text-danger small">{{ form.provincia_envio.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.codigo_postal_envio.id_for_label }}" class="form-label">Código Postal</label>
+                        {{ form.codigo_postal_envio }} {# CAMBIADO: AHORA codigo_postal_envio #}
+                        {% if form.codigo_postal_envio.errors %}
+                            <div class="text-danger small">{{ form.codigo_postal_envio.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.pais_envio.id_for_label }}" class="form-label">País</label>
+                        {{ form.pais_envio }} {# AÑADIDO: pais_envio #}
+                        {% if form.pais_envio.errors %}
+                            <div class="text-danger small">{{ form.pais_envio.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <hr class="mb-4">
+                <!-- <button class="btn btn-primary btn-lg btn-block w-100" type="submit">Realizar Pedido</button> -->
+                <!-- AQUÍ ES DONDE ESTÁN LOS DOS BOTONES, DENTRO DEL MISMO FORMULARIO -->
+                <div class="d-flex justify-content-between gap-3 mt-4">
+                    <button class="btn btn-primary btn-lg w-100" type="submit">Realizar Pedido</button>
+                    <button class="btn btn-warning btn-lg w-100" type="submit" formaction="{% url 'pedidos:pago_paypal' %}">
+                        <i class="bi bi-paypal me-2"></i> Pagar con PayPal
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="col-md-5 order-md-2 mb-4">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted">Tu Carrito</span>
+                <span class="badge bg-secondary rounded-pill">{{ cart_items|length }}</span>
+            </h4>
+            <ul class="list-group mb-3">
+                {% for item in cart_items %}
+                    <li class="list-group-item d-flex justify-content-between lh-sm">
+                        <div>
+                            <h6 class="my-0">{{ item.variacion.producto.nombre }}</h6>
+                            <small class="text-muted">{{ item.variacion }} - Cant: {{ item.cantidad }}</small>
+                        </div>
+                        <span class="text-muted">${{ item.subtotal|floatformat:2 }}</span>
+                    </li>
+                {% endfor %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Total (USD)</span>
+                    <strong>${{ total_general|floatformat:2 }}</strong>
+                </li>
+            </ul>
+            <a href="{% url 'pedidos:view_cart' %}" class="btn btn-outline-secondary w-100 mt-2">Editar Carrito</a>
+        </div>
+    </div>
+{% endblock %}

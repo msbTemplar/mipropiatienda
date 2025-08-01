@@ -84,7 +84,7 @@ def is_staff_check(user):
 
 @login_required # Requiere que el usuario esté logueado
 @user_passes_test(is_staff_check) # Requiere que el usuario sea staff
-def admin_productos_list(request):
+def admin_productos_list_conerror(request):
     productos = Producto.objects.all().order_by('-fecha_creacion')
     
     # Calcular stock total si existen variaciones
@@ -95,6 +95,17 @@ def admin_productos_list(request):
         else:
             p.total_stock = 0 # O puedes usar p.stock directamente si el producto no tiene variaciones
                                # Esta lógica asume que el stock real está en las variaciones.
+    
+    return render(request, 'productos/admin/productos_list.html', {'productos': productos})
+
+@login_required 
+@user_passes_test(is_staff_check) 
+def admin_productos_list(request):
+    # Obtienes todos los productos
+    productos = Producto.objects.all().order_by('-fecha_creacion')
+    
+    # ¡Eso es todo! La propiedad 'total_stock' ya está disponible en cada objeto 'p'
+    # en la plantilla. No necesitas calcularla aquí.
     
     return render(request, 'productos/admin/productos_list.html', {'productos': productos})
 
@@ -393,7 +404,7 @@ def admin_variacion_producto_create(request, producto_pk=None):
             variacion = form.save()
             messages.success(request, f'Variación de producto "{variacion}" creada exitosamente.')
             if producto_pk:
-                return redirect('productos:admin_variaciones_producto_list', producto_pk=producto_pk)
+                return redirect('productos:admin_variaciones_producto_list_by_product', producto_pk=producto_pk)
             return redirect('productos:admin_productos_list') # O a una lista general de variaciones si se crea sin producto_pk
         else:
             messages.error(request, 'Error al crear la variación de producto. Revisa los campos.')
@@ -416,10 +427,11 @@ def admin_variacion_producto_edit(request, pk):
             variacion = form.save()
             messages.success(request, f'Variación de producto "{variacion}" actualizada exitosamente.')
             if variacion.producto: # Redirigir al listado de variaciones de ese producto
-                return redirect('productos:admin_variaciones_producto_list', producto_pk=variacion.producto.pk)
+                return redirect('productos:admin_variaciones_producto_list_by_product', producto_pk=variacion.producto.pk)
             return redirect('productos:admin_productos_list') # Fallback si no hay producto
         else:
             messages.error(request, 'Error al actualizar la variación de producto. Revisa los campos.')
+            print("Errores del formulario:", form.errors) # <-- Asegúrate de que esta línea está aquí
     else:
         form = VariacionProductoForm(instance=variacion)
     return render(request, 'productos/admin/variacion_producto_form.html', {
@@ -438,7 +450,7 @@ def admin_variacion_producto_delete(request, pk):
         variacion.delete()
         messages.success(request, f'Variación de producto "{variacion_nombre}" eliminada exitosamente.')
         if producto_pk:
-            return redirect('productos:admin_variaciones_producto_list', producto_pk=producto_pk)
+            return redirect('productos:admin_variaciones_producto_list_by_product', producto_pk=producto_pk)
         return redirect('productos:admin_productos_list') # Fallback
     messages.error(request, 'Método no permitido para eliminar. Se requiere una solicitud POST.')
     if producto_pk:
@@ -481,10 +493,12 @@ def admin_imagen_producto_create(request, producto_pk=None):
             imagen_producto = form.save()
             messages.success(request, f'Imagen para "{imagen_producto.producto.nombre}" creada exitosamente.')
             if producto_pk:
-                return redirect('productos:admin_imagenes_producto_list', producto_pk=producto_pk)
+                return redirect('productos:admin_imagenes_producto_list_by_product', producto_pk=producto_pk)
             return redirect('productos:admin_productos_list') # O a una lista general de imágenes
         else:
             messages.error(request, 'Error al crear la imagen de producto. Revisa los campos.')
+            print("Errores del formulario:", form.errors) # <-- Asegúrate de que esta línea está aquí
+    
     else:
         form = ImagenProductoForm(initial=initial_data)
 
@@ -504,7 +518,7 @@ def admin_imagen_producto_edit(request, pk):
             imagen = form.save()
             messages.success(request, f'Imagen para "{imagen.producto.nombre}" actualizada exitosamente.')
             if imagen.producto:
-                return redirect('productos:admin_imagenes_producto_list', producto_pk=imagen.producto.pk)
+                return redirect('productos:admin_imagenes_producto_list_by_product', producto_pk=imagen.producto.pk)
             return redirect('productos:admin_productos_list') # Fallback
         else:
             messages.error(request, 'Error al actualizar la imagen de producto. Revisa los campos.')
@@ -526,7 +540,7 @@ def admin_imagen_producto_delete(request, pk):
         imagen.delete()
         messages.success(request, f'Imagen "{imagen_producto_nombre}" eliminada exitosamente.')
         if producto_pk:
-            return redirect('productos:admin_imagenes_producto_list', producto_pk=producto_pk)
+            return redirect('productos:admin_imagenes_producto_list_by_product', producto_pk=producto_pk)
         return redirect('productos:admin_productos_list') # Fallback
     messages.error(request, 'Método no permitido para eliminar. Se requiere una solicitud POST.')
     if producto_pk:

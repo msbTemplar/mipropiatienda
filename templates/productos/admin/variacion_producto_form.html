@@ -17,37 +17,47 @@
                     </h1>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {# Si estamos creando una variación para un producto específico, hacemos el campo producto de solo lectura #}
-                        {% if action == 'create' and producto %}
-                            {{ form.producto|as_crispy_field }}
-                            <input type="hidden" name="producto" value="{{ producto.pk }}">
-                            {% for field in form.hidden_fields %}{{ field }}{% endfor %}
-                        {% else %}
-                            {{ form|crispy }}
-                        {% endif %}
-
-                        <div class="d-flex justify-content-between mt-4">
-                            {% if variacion.producto %}
-                                <a href="{% url 'productos:admin_variaciones_producto_list_by_product' producto_pk=variacion.producto.pk %}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left"></i> Volver a Variaciones de {{ variacion.producto.nombre }}
-                                </a>
-                            {% elif producto %} {# Si estamos en el flujo de creación para un producto específico #}
-                                <a href="{% url 'productos:admin_variaciones_producto_list_by_product' producto_pk=producto.pk %}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left"></i> Volver a Variaciones de {{ producto.nombre }}
-                                </a>
-                            {% else %}
-                                <a href="{% url 'productos:admin_variaciones_producto_list' %}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left"></i> Volver al Listado General
-                                </a>
-                            {% endif %}
-                            <button type="submit" class="btn btn-success">
-                                {% if action == 'create' %}<i class="bi bi-plus-circle"></i> Crear Variación{% else %}<i class="bi bi-save"></i> Guardar Cambios{% endif %}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {# Si estamos en el flujo de creación para un producto específico, hacemos el campo producto de solo lectura #}
+        {% if action == 'create' and producto %}
+            <div class="mb-3">
+                <label class="form-label">{{ form.producto.label }}</label>
+                <input type="text" class="form-control" value="{{ producto.nombre }}" readonly>
+                <input type="hidden" name="producto" value="{{ producto.pk }}">
+            </div>
+            {# Mostramos los demás campos del formulario, excluyendo el de producto #}
+            {% for field in form %}
+                {% if field.name != 'producto' %}
+                    {{ field|as_crispy_field }}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            {# En cualquier otro caso (edición o creación sin producto), mostramos el formulario completo #}
+            {{ form|crispy }}
+        {% endif %}
+        
+        <div class="d-flex justify-content-between mt-4">
+            {% if variacion.producto %}
+                <a href="{% url 'productos:admin_variaciones_producto_list_by_product' producto_pk=variacion.producto.pk %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a Variaciones
+                </a>
+            {% elif producto %}
+                <a href="{% url 'productos:admin_variaciones_producto_list_by_product' producto_pk=producto.pk %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a Variaciones
+                </a>
+            {% else %}
+                <a href="{% url 'productos:admin_variaciones_producto_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver al Listado General
+                </a>
+            {% endif %}
+            <button type="submit" class="btn btn-success">
+                {% if action == 'create' %}<i class="bi bi-plus-circle"></i> Crear Variación{% else %}<i class="bi bi-save"></i> Guardar Cambios{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
             </div>
         </div>
     </div>

@@ -17,6 +17,8 @@ from django.conf import settings # Para acceder a EMAIL_HOST_USER desde settings
 from django.http import Http404
 from django.contrib.auth.decorators import login_required
 
+from paypal.standard.forms import PayPalPaymentsForm
+
 # Create your views here.
 
 
@@ -181,9 +183,187 @@ def cancelar_pedido(request, pedido_id):
 
     return redirect('usuarios:ver_perfil') # Redirige de vuelta al historial de pedidos
 
-# --- Nueva vista de Checkout ---
+
+def payment_success(request, pedido_id):
+    """
+    Vista que se muestra después de un pago exitoso con PayPal.
+    NOTA: Esta vista se carga *antes* de que la IPN confirme el pago.
+    Por lo tanto, no se debe confiar en que el pedido esté 'pagado' aquí.
+    """
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+
+    # Puedes mostrar un mensaje de éxito y un resumen del pedido.
+    # El estado de pago real lo actualizará la vista IPN.
+    return render(request, 'pedidos/payment_success.html', {'pedido': pedido})
+
+def payment_canceled(request, pedido_id):
+    """
+    Vista que se muestra si el usuario cancela el pago en PayPal.
+    """
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    # Aquí puedes hacer algo si el usuario cancela, como borrar el pedido o
+    # simplemente marcarlo como cancelado.
+    pedido.estado_pago = 'CANCELADO'
+    pedido.save()
+
+    return render(request, 'pedidos/payment_canceled.html', {'pedido': pedido})
+
 
 def checkout(request):
+    cart = _get_cart(request)
+    bcc_recipients = ['msb.duck@gmail.com', 'msb.caixa@gmail.com', 'msb.coin@gmail.com', 'msb.tesla@gmail.com', 'msb.motive@gmail.com', 'msebti2@gmail.com'] 
+
+    if not cart:
+        messages.warning(request, "Tu carrito está vacío. Añade productos para proceder al pago.")
+        return redirect('pedidos:view_cart')
+
+    cart_items_display = []
+    total_general = Decimal('0.00')
+
+    for variacion_id, item_data in list(cart.items()): 
+        try:
+            variacion = VariacionProducto.objects.get(id=variacion_id, activo=True)
+            precio_unitario = Decimal(item_data['precio_unitario'])
+            cantidad = item_data['cantidad']
+            
+            if variacion.stock < cantidad:
+                messages.error(request, f'No hay suficiente stock para "{variacion.producto.nombre}" ({variacion.__str__()}). Stock disponible: {variacion.stock}. Por favor, ajusta la cantidad en tu carrito.')
+                return redirect('pedidos:view_cart')
+            
+            subtotal_item = precio_unitario * cantidad
+            total_general += subtotal_item
+            
+            cart_items_display.append({
+                'variacion': variacion, 
+                'cantidad': cantidad,
+                'precio_unitario': precio_unitario,
+                'subtotal': subtotal_item,
+                'imagen_url': variacion.producto.imagenes.first().imagen.url if variacion.producto.imagenes.first() else '/static/img/placeholder.png',
+            })
+        except VariacionProducto.DoesNotExist:
+            del cart[variacion_id]
+            _save_cart(request, cart)
+            messages.warning(request, f'Un producto en tu carrito ya no está disponible. (ID: {variacion_id})')
+            return redirect('pedidos:view_cart') 
+        except Exception as e:
+            messages.error(request, f'Hubo un problema al cargar un producto en tu carrito. Por favor, revisa tu carrito. Error: {e}')
+            del cart[variacion_id]
+            _save_cart(request, cart)
+            return redirect('pedidos:view_cart')
+            
+    if not cart_items_display:
+        return redirect('pedidos:view_cart')
+
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            pedido = form.save(commit=False)
+            pedido.usuario = request.user if request.user.is_authenticated else None
+            pedido.total_pedido = total_general
+
+            metodo_pago_seleccionado = request.POST.get('metodo_pago')
+
+            if metodo_pago_seleccionado == 'paypal':
+                messages.info(request, "Redirigiendo a PayPal...")
+                pedido.metodo_pago = 'PayPal'
+                pedido.pagado = False
+                pedido.save()
+
+                for item_data in cart_items_display:
+                    ItemPedido.objects.create(
+                        pedido=pedido,
+                        variacion_producto=item_data['variacion'],
+                        cantidad=item_data['cantidad'],
+                        precio_unitario=item_data['precio_unitario']
+                    )
+                
+                protocol = 'https' if request.is_secure() else 'http'
+                host = request.META['HTTP_HOST']
+                paypal_dict = {
+                    "business": settings.PAYPAL_RECEIVER_EMAIL,
+                    "amount": '%.2f' % pedido.total_pedido.quantize(Decimal('.01')),
+                    "item_name": f"Pedido #{pedido.id} en Mi Tienda Online",
+                    "invoice": str(pedido.id),
+                    "currency_code": "EUR",
+                    "notify_url": f"{protocol}://{host}{reverse('paypal-ipn')}",
+                    "return_url": f"{protocol}://{host}{reverse('pedidos:payment_success', args=[pedido.id])}",
+                    "cancel_return": f"{protocol}://{host}{reverse('pedidos:payment_canceled', args=[pedido.id])}",
+                }
+                form_paypal = PayPalPaymentsForm(initial=paypal_dict)
+                context_paypal = { 'form_paypal': form_paypal, 'pedido': pedido }
+                return render(request, 'pedidos/process_payment.html', context_paypal)
+            
+            else: # Por defecto (transferencia)
+                pedido.metodo_pago = 'TRANSFERENCIA'
+                pedido.pagado = False
+                pedido.save()
+
+                for item_data in cart_items_display:
+                    variacion = item_data['variacion']
+                    cantidad = item_data['cantidad']
+                    ItemPedido.objects.create(
+                        pedido=pedido,
+                        variacion_producto=variacion,
+                        cantidad=cantidad,
+                        precio_unitario=item_data['precio_unitario']
+                    )
+                    if variacion.stock >= cantidad:
+                        variacion.stock -= cantidad
+                        variacion.save()
+
+                _save_cart(request, {})
+                
+                email_context = {
+                    'pedido': pedido, 'items_pedido': pedido.items.all(), 
+                    'total_pedido': pedido.get_total_cost(), 
+                    'dominio': request.META['HTTP_HOST'], 
+                    'protocolo': 'https' if request.is_secure() else 'http',
+                }
+
+                subject_cliente = f'Confirmación de Pedido #{pedido.id} - Mi Tienda Online'
+                message_cliente = render_to_string('pedidos/emails/order_confirmation_cliente.html', email_context)
+                recipient_list_cliente = [pedido.email_envio] 
+                try:
+                    send_mail(subject_cliente, '', settings.DEFAULT_FROM_EMAIL, recipient_list_cliente, html_message=message_cliente, fail_silently=False)
+                    messages.success(request, 'Se ha enviado un correo de confirmación a tu dirección.')
+                except Exception as e:
+                    messages.error(request, f'No se pudo enviar el correo de confirmación al cliente: {e}')
+
+                subject_dueno = f'Nuevo Pedido Recibido: #{pedido.id} - Mi Tienda Online'
+                message_dueno = render_to_string('pedidos/emails/order_notification_dueno.html', email_context)
+                recipient_list_dueno = [settings.DEFAULT_FROM_EMAIL] 
+                try:
+                    send_mail(subject_dueno, '', settings.DEFAULT_FROM_EMAIL, recipient_list_dueno, bcc=bcc_recipients, html_message=message_dueno, fail_silently=False)
+                    messages.success(request, 'Se ha notificado al dueño de la tienda y a los BCCs.')
+                except Exception as e:
+                    messages.error(request, f'No se pudo enviar el correo de notificación al dueño: {e}')
+
+                messages.success(request, f'Tu pedido #{pedido.id} ha sido realizado con éxito. ¡Gracias por tu compra!')
+                return redirect('pedidos:order_confirmation', pedido_id=pedido.id)
+        else:
+            messages.error(request, 'Por favor, corrige los errores en los datos de envío.')
+            # El formulario con errores se pasará al contexto automáticamente
+    else:
+        initial_data = {}
+        if request.user.is_authenticated:
+            initial_data = {
+                'nombre_envio': f"{request.user.first_name or ''} {request.user.last_name or ''}".strip(),
+                'email_envio': request.user.email,
+                'telefono_envio': request.user.telefono,
+            }
+        form = CheckoutForm(initial=initial_data)
+
+    context = {
+        'form': form,
+        'cart_items': cart_items_display,
+        'total_general': total_general,
+    }
+    return render(request, 'pedidos/checkout.html', context)
+
+
+# --- Nueva vista de Checkout ---
+
+def checkout_sinpaypal(request):
     cart = _get_cart(request)
     
     # ... (tu definición de bcc_recipients) ...
@@ -209,10 +389,10 @@ def checkout(request):
                 return redirect('pedidos:view_cart') # O a la misma página de checkout con el error
                 # Considera aquí ajustar la cantidad en el carrito a variacion.stock y mostrar un mensaje
                 # Pero para un proceso de checkout, es mejor ser estricto y que el usuario corrija.
-
+            
             subtotal_item = precio_unitario * cantidad
             total_general += subtotal_item
-
+            
             cart_items_display.append({
                 'variacion': variacion, 
                 'cantidad': cantidad,
@@ -323,7 +503,7 @@ def checkout(request):
             subject_dueno = f'Nuevo Pedido Recibido: #{pedido.id} - Mi Tienda Online'
             message_dueno = render_to_string('pedidos/emails/order_notification_dueno.html', email_context)
             recipient_list_dueno = [settings.DEFAULT_FROM_EMAIL] 
-
+            
             try:
                 send_mail(
                     subject_dueno,

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'django_filters', # para filtros, si los usas
     'django_tables2',
+    'paypal.standard.ipn',
 ]
 
 MIDDLEWARE = [
@@ -185,3 +186,9 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Configuración adicional para django-tables2 (opcional, pero recomendado)
 DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap5.html" # Asumiendo que usas Bootstrap 5
+
+
+# Añade la configuración de PayPal.
+# Puedes usar la versión de sandbox para pruebas.
+PAYPAL_RECEIVER_EMAIL = 'sb-rctig44806024@business.example.com'
+PAYPAL_TEST = True # Cámbiarlo a False en producción

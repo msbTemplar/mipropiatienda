@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Pago Cancelado{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading">Pago cancelado</h4>
+        <p>Has cancelado tu pedido <strong>#{{ pedido.id }}</strong> en PayPal.</p>
+        <hr>
+        <p class="mb-0">Si lo deseas, puedes volver a intentarlo o contactar con nuestro equipo de soporte.</p>
+    </div>
+    <a href="{% url 'pedidos:checkout' %}" class="btn btn-primary mt-3">Volver al checkout</a>
+</div>
+{% endblock %}

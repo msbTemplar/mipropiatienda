@@ -32,6 +32,8 @@ urlpatterns = [
     path('usuarios/', include('usuarios.urls')),
     path('pedidos/', include('pedidos.urls')),
     path('paginas/', include('paginas.urls')),
+    # ¡IMPORTANTE! Añade esta URL de PayPal en la raíz del proyecto
+    path('paypal-ipn/', include('paypal.standard.ipn.urls')), 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # if settings.DEBUG:

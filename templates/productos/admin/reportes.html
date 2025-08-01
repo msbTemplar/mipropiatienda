@@ -33,15 +33,15 @@
             <h5>Filtros de Productos</h5>
             {{ producto_filter.form|crispy }}
             <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
-            {% if request.GET.producto_filter %}
+            
                 <a href="{% url 'productos:admin_reportes_productos' %}" class="btn btn-outline-secondary mt-2">Limpiar Filtros</a>
-            {% endif %}
+            
         </div>
     </form>
 
     {% render_table productos_table %}
 
-    <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Productos">
+    <!-- <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Productos">
         <a href="?_export=xlsx_productos{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-success me-2">
             <i class="bi bi-file-earmark-excel"></i> Exportar Productos (Excel)
         </a>
@@ -51,7 +51,21 @@
         <a href="?_export=pdf_productos{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-danger">
             <i class="bi bi-file-earmark-pdf"></i> Exportar Productos (PDF)
         </a>
+    </div> -->
+
+    {% with request.GET.urlencode as url_params %}
+    <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Productos">
+        <a href="{% url 'productos:admin_reportes_productos' %}?_export=xlsx_productos&{{ url_params|cut:'_export=' }}" class="btn btn-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Productos (Excel)
+        </a>
+        <a href="{% url 'productos:admin_reportes_productos' %}?_export=csv_productos&{{ url_params|cut:'_export=' }}" class="btn btn-secondary me-2">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Productos (CSV)
+        </a>
+        <a href="{% url 'productos:admin_reportes_productos' %}?_export=pdf_productos&{{ url_params|cut:'_export=' }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar Productos (PDF)
+        </a>
     </div>
+{% endwith %}
 
     <hr class="my-5">
 
@@ -62,15 +76,15 @@
             <h5>Filtros de Variaciones</h5>
             {{ variacion_filter.form|crispy }}
             <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
-            {% if request.GET.variacion_filter %}
+            
                 <a href="{% url 'productos:admin_reportes_productos' %}" class="btn btn-outline-secondary mt-2">Limpiar Filtros</a>
-            {% endif %}
+            
         </div>
     </form>
-
+    
     {% render_table variaciones_table %}
 
-    <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Variaciones">
+    <!-- <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Variaciones">
         <a href="?_export=xlsx_variaciones{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-success me-2">
             <i class="bi bi-file-earmark-excel"></i> Exportar Variaciones (Excel)
         </a>
@@ -80,7 +94,21 @@
         <a href="?_export=pdf_variaciones{{ request.GET.urlencode|cut:'_export=' }}" class="btn btn-danger">
             <i class="bi bi-file-earmark-pdf"></i> Exportar Variaciones (PDF)
         </a>
+    </div> -->
+
+    {% with request.GET.urlencode as url_params %}
+    <div class="btn-group mt-3" role="group" aria-label="Opciones de Exportación Variaciones">
+        <a href="{% url 'productos:admin_reportes_productos' %}?_export=xlsx_variaciones&{{ url_params|cut:'_export=' }}" class="btn btn-success me-2">
+            <i class="bi bi-file-earmark-excel"></i> Exportar Variaciones (Excel)
+        </a>
+        <a href="{% url 'productos:admin_reportes_productos' %}?_export=csv_variaciones&{{ url_params|cut:'_export=' }}" class="btn btn-secondary me-2">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Exportar Variaciones (CSV)
+        </a>
+        <a href="{% url 'productos:admin_reportes_productos' %}?_export=pdf_variaciones&{{ url_params|cut:'_export=' }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Exportar Variaciones (PDF)
+        </a>
     </div>
+{% endwith %}
 
 </div>
 {% endblock %}

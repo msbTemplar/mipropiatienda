@@ -19,11 +19,24 @@
                 <div class="card-body">
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {% if action == 'create' and producto %}
+                        <!-- {% if action == 'create' and producto %}
                             {{ form.producto|as_crispy_field }}
                             <input type="hidden" name="producto" value="{{ producto.pk }}">
                             {% for field in form.hidden_fields %}{{ field }}{% endfor %}
                         {% else %}
+                            {{ form|crispy }}
+                        {% endif %} -->
+
+                        {% if action == 'create' and producto %}
+                            {{ form.producto|as_crispy_field }}
+                            <input type="hidden" name="producto" value="{{ producto.pk }}">
+                        {% endif %}
+
+                        {# AÑADE ESTA LÍNEA PARA RENDERIZAR EL CAMPO DE LA IMAGEN #}
+                        {{ form.imagen|as_crispy_field }}
+
+                        {% if action == 'edit' %}
+                            {# Si estás editando, puedes mostrar todo el formulario #}
                             {{ form|crispy }}
                         {% endif %}
 

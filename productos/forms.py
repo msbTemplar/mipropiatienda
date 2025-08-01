@@ -136,3 +136,11 @@ class ImagenProductoForm(forms.ModelForm):
             'es_principal': 'Es Imagen Principal',
             'orden': 'Orden de Visualización',
         }
+    
+    # Añade este método para modificar el campo 'orden'
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Hacemos que el campo 'orden' no sea obligatorio
+        self.fields['orden'].required = False
+        # Le asignamos un valor por defecto
+        self.fields['orden'].initial = 1

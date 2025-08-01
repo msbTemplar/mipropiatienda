@@ -27,6 +27,29 @@ python manage.py startapp core
 python manage.py startapp paginas
 
 
+pip install django-paypal
+
+https://www.paypal.com/es/signup/account
+
+mi cuenta msb.duck
+Moha.93345900
+
+https://developer.paypal.com/
+
+Display App Name   Default Application
+
+Client ID    AZ3LcLtTeSsDH7wcdRGqvys4nLMCGF66fuWgHRuDfgxxB7VB842bCzZE6heuqx-5SpmfrJDSO5Ors1v8
+
+Secret key 1   EEomror1EXyX7QrdVF4XCPwreMlQmQCjDUSTlKsR3dx23msbl9B7U7vzaeyVIBoNMG-mjT6Ei0jsfX_r
+
+sb-ktcrz44895831@personal.example.com
+
+7j-!|RmC
+
+
+
+
+
 pip install django-crispy-forms crispy-bootstrap5
 
 pip install django-tables2 django-filter tablib WeasyPrint Pillow # Pillow por si necesitas trabajar con imágenes para WeasyPrint
@@ -44,6 +67,17 @@ git branch -M main
 git remote add origin git@github.com:msbTemplar/mipropiatienda.git
 git push -u origin main
 
+leni.sinclaire@gmail.com
+Moha.93345900 
+mipropiatienda
+
+https://github.com/msbTemplar/mipropiatienda.git
+
+https://github.com/msbTemplar/mipropiatienda.git
+
+https://www.youtube.com/watch?v=CdtQSiC8ZNQ
+
+https://mipropiatienda.pythonanywhere.com
 
 
 pip install WeasyPrint

@@ -64,7 +64,7 @@ class Producto(models.Model):
     class Meta:
         ordering = ['nombre']
         verbose_name_plural = "Productos"
-
+    
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.nombre)
