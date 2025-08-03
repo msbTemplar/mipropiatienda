@@ -30,6 +30,15 @@ import tempfile # Para manejar archivos temporales
 from .filters import ProductoFilter, VariacionProductoFilter # Asegúrate de que estos filtros existen
 from .tables import ProductoTable, VariacionProductoTable # Asegúrate de que estas tablas existen
 import logging # Nueva importación para logs
+from django.http import JsonResponse
+
+def privacy_policy(request):
+    return render(request, 'productos/privacy_policy.html')
+
+def set_cookie_consent(request):
+    response = JsonResponse({'status': 'ok'})
+    response.set_cookie('cookie_consent', 'true', max_age=365*24*60*60)  # 1 año
+    return response
 
 def productos_listado(request):
     productos = Producto.objects.filter(disponible=True).order_by('nombre')

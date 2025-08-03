@@ -1,3 +1,121 @@
+
+msbservidor.ddns.net
+79.117.251.155
+
+
+mipropioservidor.ddns.net
+79.117.251.155
+
+ngrok  msb.tesla  Moha.93345900
+
+A9ZDXHDX9R
+UF6UFAABAJ
+4QWF6DSAFG
+KQNB26WV7E
+4YJHJ4FFF5
+YVAQPT9U7R
+9BA82Z7DMS
+WCG3EAUMHN
+FEYVK8PMDY
+4R9DP2NKF6
+
+
+ngrok config add-authtoken 30jbVxMOl18JfzukY2t0fyBeGdr_4hGjsggGNLK5jFStR3743
+
+https://06561e7392b3.ngrok-free.app -> http://localhost:80
+
+https://06561e7392b3.ngrok-free.app
+
+./ngrok http 80
+
+
+----------------------------------------------------------
+
+server {
+    listen 80;
+    server_name TU_URL_DE_NGROK;
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location /static/ {
+        alias /home/dawe3456/misproyectos/midentista/dentistsite/staticfiles/;
+    }
+}
+
+sudo apt install nginx
+pip install gunicorn
+
+cd /home/dawe3456/misproyectos/midentista/dentistsite
+source venv/bin/activate
+python manage.py collectstatic
+
+sudo chown -R www-data:www-data /home/dawe3456/misproyectos/midentista/dentistsite
+sudo chmod -R 775 /home/dawe3456/misproyectos/midentista/dentistsite
+
+sudo systemctl stop apache2
+sudo ln -s /etc/nginx/sites-available/dentist /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+
+gunicorn --bind 0.0.0.0:8000 dentist.wsgi:application
+
+./ngrok http 80
+sudo systemctl restart nginx
+
+
+sudo nano /etc/nginx/sites-available/segundo_proyecto
+
+server {
+    listen 80;
+    server_name TU_URL_DE_NGROK;
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location /static/ {
+        alias /home/dawe3456/misproyectos/midentista/dentistsite/staticfiles/;
+    }
+}
+
+
+En la configuración de Nginx, la línea proxy_pass debe apuntar al nuevo puerto: 
+proxy_pass http://127.0.0.1:8001;.
+
+python manage.py collectstatic
+
+gunicorn --bind 0.0.0.0:8001 nuevo_proyecto.wsgi:application
+
+
+
+
+para php
+
+server {
+    listen 80;
+    server_name TU_URL_DE_NGROK;
+    root /home/dawe3456/misproyectos/mi_proyecto_php;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+    }
+}
+
+
+
+
+---------------------------------------------------------------
+
+
 django-admin startproject mitienda .
 python manage.py startapp productos
 python manage.py migrate
@@ -46,7 +164,7 @@ sb-ktcrz44895831@personal.example.com
 
 7j-!|RmC
 
-
+'mipropiatienda.pythonanywhere.com'
 
 
 

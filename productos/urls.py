@@ -7,6 +7,9 @@ app_name = 'productos' # ¡IMPORTANTE: Define el app_name aquí!
 urlpatterns = [
     # URLs de Listado y Detalle de Productos (Públicas)
     path('', views.productos_listado, name='productos_listado'),
+    path('set_cookie_consent/', views.set_cookie_consent, name='set_cookie_consent'),
+    
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     # Tu URL de detalle de producto es por slug, no por id/slug. La mantengo así:
     path('<slug:slug>/', views.producto_detalle, name='producto_detalle'), #
 
